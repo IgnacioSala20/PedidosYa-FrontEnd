@@ -62,43 +62,38 @@ export class ModalModificar implements OnChanges {
       this.inicializarPersonaLocal(this.persona);
     }
   }
-inicializarPersonaLocal(persona: Persona) {
-  this.personaLocal = JSON.parse(JSON.stringify(persona));
+  inicializarPersonaLocal(persona: Persona) {
+    this.personaLocal = JSON.parse(JSON.stringify(persona));
 
-  if (typeof this.personaLocal.fechaNacimiento === 'string') {
-    this.personaLocal.fechaNacimiento = this.personaLocal.fechaNacimiento.split('T')[0];
-  }
-
-  const paisCompleto = this.paises.find(p => p.id === this.personaLocal.pais?.id);
-  this.provincias = paisCompleto?.provincias || [];
-
-  if (this.personaLocal.provincia && this.provincias.length > 0) {
-    const provinciaEncontrada = this.provincias.find(
-      prov => prov.id === this.personaLocal.provincia!.id
-    );
-    this.personaLocal.provincia = provinciaEncontrada || null;
-
-    // Cargar ciudades
-    this.ciudades = this.personaLocal.provincia?.ciudades || [];
-    console.log('Ciudades disponibles:', this.ciudades);
-    console.log('Ciudad seleccionada:', this.personaLocal.ciudad);
-
-    // Verificar que la ciudad exista en la lista
-    if (!this.ciudades.includes(this.personaLocal.ciudad || '')) {
-      // Asignar la primera ciudad válida para que el select muestre algo
-      this.personaLocal.ciudad = this.ciudades.length > 0 ? this.ciudades[0] : null;
+    if (typeof this.personaLocal.fechaNacimiento === 'string') {
+      this.personaLocal.fechaNacimiento = this.personaLocal.fechaNacimiento.split('T')[0];
     }
-  } else {
-    this.ciudades = [];
-    this.personaLocal.ciudad = null;
+
+    const paisCompleto = this.paises.find(p => p.id === this.personaLocal.pais?.id);
+    this.provincias = paisCompleto?.provincias || [];
+
+    if (this.personaLocal.provincia && this.provincias.length > 0) {
+      const provinciaEncontrada = this.provincias.find(
+        prov => prov.id === this.personaLocal.provincia!.id
+      );
+      this.personaLocal.provincia = provinciaEncontrada || null;
+
+      // Cargar ciudades
+      this.ciudades = this.personaLocal.provincia?.ciudades || [];
+      console.log('Ciudades disponibles:', this.ciudades);
+      console.log('Ciudad seleccionada:', this.personaLocal.ciudad);
+
+      // Verificar que la ciudad exista en la lista
+      if (!this.ciudades.includes(this.personaLocal.ciudad || '')) {
+        // Asignar la primera ciudad válida para que el select muestre algo
+        this.personaLocal.ciudad = this.ciudades.length > 0 ? this.ciudades[0] : null;
+      }
+    } else {
+      this.ciudades = [];
+      this.personaLocal.ciudad = null;
+    }
   }
-}
-
-
-
-
-
-   onPaisChange() {
+  onPaisChange() {
     if (this.personaLocal.pais) {
       this.provincias = this.personaLocal.pais.provincias;
       this.personaLocal.provincia = null;
