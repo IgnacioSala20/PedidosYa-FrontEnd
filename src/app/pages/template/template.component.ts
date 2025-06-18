@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { GlobalStatusService } from '../../services/global-status.service';
 import { ThemeService } from '../../services/theme.service';
 import { CommonModule } from '@angular/common';
@@ -11,8 +11,24 @@ import { CommonModule } from '@angular/common';
   styleUrl: './template.component.css',
 })
 export class TemplateComponent {
-  constructor(private globalStatusService: GlobalStatusService, public themeService: ThemeService) {}
+  constructor(
+    private globalStatusService: GlobalStatusService, 
+    public themeService: ThemeService,
+    private route : Router
+  ) {}
   menuOpen=false;
+  showProfileMenu = false;
+  
+  toggleProfileMenu() {
+    this.showProfileMenu = !this.showProfileMenu;
+  }
+
+  logout() {
+    // Aquí tu lógica para cerrar sesión
+    console.log('Sesión cerrada');
+    this.showProfileMenu = false;
+    this.route.navigate(['/login'])
+  }
   isLoading(): boolean {
     return this.globalStatusService.isLoading();
   }
