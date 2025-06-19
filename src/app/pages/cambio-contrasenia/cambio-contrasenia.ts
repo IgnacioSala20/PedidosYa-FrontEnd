@@ -34,6 +34,7 @@ export class CambioContrasenia {
     }
     console.log(this.formulario.value);
     this.error='';
+    this.goToLogin();
   }
   goToLogin(){
     this.route.navigate(['/login'])

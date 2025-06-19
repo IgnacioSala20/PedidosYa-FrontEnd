@@ -1,104 +1,69 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Pais, Persona, Provincia } from '../../interface/modales.dto';
 
-// Primero define las interfaces de apoyo
-interface Provincia {
-  id: number;
-  name: string;
-  ciudades: string[];
-}
 
-interface Pais {
-  id: number;
-  name: string;
-  provincias: Provincia[];
-}
-
-interface Persona {
-  nombre: string;
-  email: string;
-  fechaNacimiento: string;
-  ciudad: string | null;
-  provincia: Provincia | null;
-  pais: Pais | null;
-}
 
 @Component({
   selector: 'app-modal-agregar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './modal-agregar.html',
   styleUrl: './modal-agregar.css'
 })
-export class ModalAgregar implements OnChanges{
-  @Input() mostrar: boolean = false;
-  @Input() nuevaPersona: Persona = {
-    nombre: '',
-    email: '',
-    fechaNacimiento: '',
-    ciudad: null,
-    provincia: null,
-    pais: null
-  };
+export class ModalAgregar{
+  formulario: FormGroup;
+  error = '';
+  constructor(private fb: FormBuilder){
+    this.formulario=this.fb.group({
+      nombre: ['',[Validators.required, Validators.maxLength(15)]],
+      email: ['', [Validators.required, Validators.email]],
+      fechaNacimiento: ['',[Validators.required]],
+      pais: [null, [Validators.required]],
+      provincia: [null, [Validators.required]],
+      ciudad: [null, [Validators.required]]
+    })
+  }
 
+  @Input() mostrar: boolean = false;
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() guardarPersona = new EventEmitter<Persona>();
   @Input() paises: Pais[] =[];
-
 
   provincias: Provincia[] = [];
   ciudades: string[] = [];
 
   cerrar() {
     this.cerrarModal.emit();
+    this.formulario.reset();
+    this.provincias = [];
+    this.ciudades = [];
   }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['nuevaPersona'] && this.nuevaPersona) {
-      // Reinicializa las provincias y ciudades si la persona cambia
-      this.provincias = this.nuevaPersona.pais?.provincias ?? [];
-      this.ciudades = this.nuevaPersona.provincia?.ciudades ?? [];
+  agregarPersona() {
+    if (this.formulario.invalid) {
+      this.error="Completa todos los campos correctamente."
+      return;
     }
-  }
-agregarPersona() {
-  if (this.formularioValido()) {
-    const persona: Persona = {
-      ...this.nuevaPersona,
-    };
-
-    console.log('Fecha para guardar:', persona.fechaNacimiento); // yyyy-MM-dd
+    const persona: Persona = this.formulario.value;
     this.guardarPersona.emit(persona);
+    this.formulario.reset();
+    this.provincias = [];
+    this.ciudades = [];
     this.cerrar();
   }
-}
-private formularioValido(): boolean {
-  const p = this.nuevaPersona;
-  return !!(p.nombre && p.email && p.fechaNacimiento && p.ciudad && p.provincia && p.pais);
-}
-  onPaisSeleccionado(pais: Pais | null) {
-  this.nuevaPersona.pais = pais;
-  this.nuevaPersona.provincia = null;
-  this.nuevaPersona.ciudad = null;
-  } 
 
   onPaisChange() {
-    if (this.nuevaPersona.pais) {
-      this.provincias = this.nuevaPersona.pais.provincias;
-    } else {
-      this.provincias = [];
-    }
-    this.nuevaPersona.provincia = null;
+    const pais = this.formulario.get('pais')?.value;
+    this.provincias = pais?.provincias || [];
+    this.formulario.get('provincia')?.setValue(null);
+    this.formulario.get('ciudad')?.setValue(null);
     this.ciudades = [];
-    this.nuevaPersona.ciudad = null;
   }
 
   onProvinciaChange() {
-    if (this.nuevaPersona.provincia) {
-      this.ciudades = this.nuevaPersona.provincia.ciudades;
-    } else {
-      this.ciudades = [];
-    }
-    this.nuevaPersona.ciudad = null;
+    const provincia = this.formulario.get('provincia')?.value;
+    this.ciudades = provincia?.ciudades || [];
+    this.formulario.get('ciudad')?.setValue(null);
   }
 }

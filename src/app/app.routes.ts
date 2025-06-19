@@ -15,6 +15,7 @@ export const routes: Routes = [
   {
     path: '',
     component: TemplateComponent,
+    //canActivate: canActivate,
     children: [
       {
         path: 'home',

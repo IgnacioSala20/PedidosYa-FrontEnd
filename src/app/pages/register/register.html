@@ -6,28 +6,45 @@
         <p class="mt-2">Completa tus datos para registrarte</p>
     </div>
 
-    <form class="p-6 space-y-4">
-
+    <form class="p-6 space-y-4" [formGroup]="formulario" (ngSubmit)="goToLogin()">
+        @if (error) {
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong class="font-bold">Error:</strong>
+              <span class="block sm:inline">{{ error }}</span>
+          </div>
+        }
         <div class="flex flex-col">
           <label class="block text-gray-700 mb-1">Nombre Completo</label>
           <input 
+          formControlName="nombre"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="text" required placeholder="Ej: ignacio" name="email" id="">
+          @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched){
+            <p class="text-xs text-gray-500 mt-1">Nombre en formato incorrecto.</p>
+          }
         </div>
 
         <div class="flex flex-col">
           <label class="block text-gray-700 mb-1">Email</label>
           <input 
+          formControlName="email"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="text" required placeholder="Ej: ignacio@gmail.com" name="email" id="">
+          @if (formulario.get('email')?.invalid && formulario.get('email')?.touched){
+            <p class="text-xs text-gray-500 mt-1">Email en formato incorrecto.</p>
+          }
         </div>
 
         <div class="flex flex-col">
           <label class="block text-gray-700 mb-1">Contraseña</label>
           <input 
+          formControlName="contraseña"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="password" required placeholder="••••••••" name="email" id="">
           <p class="text-xs text-gray-500 mt-1">Minimo 8 caracteres</p>
+          @if (formulario.get('contraseña')?.invalid && formulario.get('contraseña')?.touched){
+            <p class="text-xs text-gray-500 mt-1">Contraseña en formato incorrecto.</p>
+          }
         </div>
 
       <div class="flex items-center">
@@ -44,7 +61,8 @@
 
       <button 
         type="submit" 
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+        [disabled]="formulario.invalid"
+        class="disabled:bg-blue-300 disabled:cursor-not-allowed w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors"
       >
         Registrarse
       </button>
@@ -53,7 +71,7 @@
       <p class="text-gray-600">
         ¿Ya tienes una cuenta? 
         <a 
-          (click)="goToLogin()" 
+          (click)="enviarLogin()" 
           class="text-blue-600 hover:underline cursor-pointer"
         >
           Iniciar Sesion

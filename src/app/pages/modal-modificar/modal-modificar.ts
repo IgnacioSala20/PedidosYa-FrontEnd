@@ -1,135 +1,124 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  SimpleChanges,
-  OnChanges
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-interface Provincia {
-  id: number;
-  name: string;
-  ciudades: string[];
-}
-
-interface Pais {
-  id: number;
-  name: string;
-  provincias: Provincia[];
-}
-
-interface Persona {
-  nombre: string;
-  email: string;
-  fechaNacimiento: string;
-  ciudad: string | null;
-  provincia: Provincia | null;
-  pais: Pais | null;
-}
-
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Pais, Persona, Provincia } from '../../interface/modales.dto';
 @Component({
   selector: 'app-modal-modificar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './modal-modificar.html',
   styleUrls: ['./modal-modificar.css']
 })
-export class ModalModificar implements OnChanges {
+export class ModalModificar{
+  formulario: FormGroup;
+  error = '';
+  constructor(private fb: FormBuilder){
+    this.formulario=this.fb.group({
+      nombre: ['',[Validators.required, Validators.maxLength(15)]],
+      email: ['', [Validators.required, Validators.email]],
+      fechaNacimiento: ['',[Validators.required]],
+      pais: [null, [Validators.required]],
+      provincia: [null, [Validators.required]],
+      ciudad: [null, [Validators.required]]
+    })
+  }
   @Input() mostrar = false;
   @Input() paises: Pais[] = [];
-  @Input() persona: Persona | null = null;
+
+  private _persona: Persona | null = null;
+
+  @Input() set persona(value: Persona | null) {
+    this._persona = value;
+    if (value) {
+      this.initFormulario(value);
+    }
+  }
 
   @Output() guardarPersona = new EventEmitter<Persona>();
   @Output() cerrarModal = new EventEmitter<void>();
 
-  personaLocal: Persona = {
-    nombre: '',
-    email: '',
-    fechaNacimiento: '',
-    ciudad: null,
-    provincia: null,
-    pais: null
-  };
-
   provincias: Provincia[] = [];
   ciudades: string[] = [];
 
-  ngOnChanges(changes: SimpleChanges) {
-    if ((changes['persona'] || changes['mostrar']) && this.mostrar && this.persona) {
-      this.inicializarPersonaLocal(this.persona);
-    }
+  private initFormulario(persona: Persona) {
+    // Buscar país completo
+    const pais = this.paises.find(p => p.id === persona.pais?.id) || null;
+    const provincias = pais?.provincias || [];
+
+    // Buscar provincia completa
+    const provincia = provincias.find(prov => prov.id === persona.provincia?.id) || null;
+    const ciudades = provincia?.ciudades || [];
+
+    // Validar ciudad
+    const ciudad = ciudades.includes(persona.ciudad || '') ? persona.ciudad : ciudades[0] || null;
+
+    this.provincias = provincias;
+    this.ciudades = ciudades;
+
+    this.formulario.setValue({
+      nombre: persona.nombre,
+      email: persona.email,
+      fechaNacimiento: persona.fechaNacimiento,
+      pais: pais,
+      provincia: provincia,
+      ciudad: ciudad
+    });
   }
-  inicializarPersonaLocal(persona: Persona) {
-    this.personaLocal = JSON.parse(JSON.stringify(persona));
 
-    const paisCompleto = this.paises.find(p => p.id === this.personaLocal.pais?.id);
-    this.provincias = paisCompleto?.provincias || [];
-
-    if (this.personaLocal.provincia && this.provincias.length > 0) {
-      const provinciaEncontrada = this.provincias.find(
-        prov => prov.id === this.personaLocal.provincia!.id
-      );
-      this.personaLocal.provincia = provinciaEncontrada || null;
-
-      // Cargar ciudades
-      this.ciudades = this.personaLocal.provincia?.ciudades || [];
-
-      // Verificar que la ciudad exista en la lista
-      if (!this.ciudades.includes(this.personaLocal.ciudad || '')) {
-        // Asignar la primera ciudad válida para que el select muestre algo
-        this.personaLocal.ciudad = this.ciudades.length > 0 ? this.ciudades[0] : null;
-      }
-    } else {
-      this.ciudades = [];
-      this.personaLocal.ciudad = null;
-    }
-  }
   onPaisChange() {
-    if (this.personaLocal.pais) {
-      this.provincias = this.personaLocal.pais.provincias;
-      this.personaLocal.provincia = null;
-      this.personaLocal.ciudad = null;
-      this.ciudades = [];
-    } else {
-      this.provincias = [];
-      this.ciudades = [];
-      this.personaLocal.provincia = null;
-      this.personaLocal.ciudad = null;
-    }
-  }
-
-onProvinciaChange() {
-  if (this.personaLocal.provincia) {
-    this.ciudades = this.personaLocal.provincia.ciudades;
-    this.personaLocal.ciudad = null;
-  } else {
+    const pais: Pais = this.formulario.get('pais')?.value;
+    this.provincias = pais?.provincias || [];
     this.ciudades = [];
-    this.personaLocal.ciudad = null;
-  }
-}
 
+    this.formulario.patchValue({
+      provincia: null,
+      ciudad: null
+    });
+  }
+
+  onProvinciaChange() {
+    const provincia: Provincia = this.formulario.get('provincia')?.value;
+    this.ciudades = provincia?.ciudades || [];
+
+    this.formulario.patchValue({
+      ciudad: null
+    });
+  }
 
   cerrar() {
+    if (this._persona) {
+      this.initFormulario(this._persona); // Restaurar datos originales
+    }
+
     this.cerrarModal.emit();
   }
-
   guardar() {
-    this.guardarPersona.emit(this.personaLocal);
-  }
+    if (this.formulario.invalid) {
+      this.error = "Completa todos los campos correctamente.";
+      return;
+    }
 
-  compareById(o1: any, o2: any): boolean {
-    return o1 && o2 ? o1.id === o2.id : o1 === o2;
+    const persona: Persona = this.formulario.value;
+    this.guardarPersona.emit(persona);
+    this.cerrar();
   }
 
   compareProvincia(p1: Provincia | null, p2: Provincia | null): boolean {
-    return p1 && p2 ? p1.id === p2.id : p1 === p2;
+    //Compara 2 provincias, una es la provincia que viene seleccionada
+    //es decir la que viene con la persona a modificar, y luego los otros son las
+    //provincias que estan dentro de las option, para que cuando sean iguales los id, 
+    // sabemos que esa opcion se marca como selected, es decir se pone selected
+    if (p1 && p2) {
+      return p1.id === p2.id;
+    }
+    return p1 === p2;
   }
 
   comparePais(p1: Pais | null, p2: Pais | null): boolean {
-    return p1 && p2 ? p1.id === p2.id : p1 === p2;
+    if (p1 && p2) {
+      return p1.id===p2.id;
+    }
+    return p1 === p2;
   }
 
 }

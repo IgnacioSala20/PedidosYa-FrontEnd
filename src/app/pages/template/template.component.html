@@ -5,23 +5,6 @@
       ☰
     </button>
     
-    <!-- Logo -->
-    <div class="flex justify-center h-full">
-      <a href="/home" class="h-full flex items-center relative">
-        <!-- Imagen para modo claro -->
-        <img src="Isologotipo_PedidosYa-removebg-preview.png" 
-            alt="PedidosYa" 
-            class="h-full max-h-[100%] w-auto max-w-[240px] object-contain
-                    dark:block hover:scale-105 transition-transform">
-
-        <!-- Imagen para modo oscuro -->
-        <img src="sin fondo9.png" 
-            alt="PedidosYa" 
-            class="h-full max-h-[100%] w-auto max-w-[240px] object-contain
-                    dark:hidden hover:scale-105 transition-transform absolute top-0 left-0">
-      </a>
-    </div>
-    
     <!-- Contenedor de botones derecha -->
     <div class="flex items-center space-x-4">
       <!-- Botón Modo Oscuro -->
@@ -59,7 +42,22 @@
       </div>
     </div>
   </div>
+  <!-- Logo -->
+  <div class="absolute top-0 left-1/2 transform -translate-x-1/2 h-20 flex items-center z-40">
+    <a href="/home" class="h-full flex items-center relative">
+      <!-- Imagen para modo claro -->
+      <img src="Isologotipo_PedidosYa-removebg-preview.png" 
+          alt="PedidosYa" 
+          class="h-full max-h-[100%] w-auto max-w-[240px] object-contain
+                  dark:block hover:scale-105 transition-transform">
 
+      <!-- Imagen para modo oscuro -->
+      <img src="sin fondo9.png" 
+          alt="PedidosYa" 
+          class="h-full max-h-[100%] w-auto max-w-[240px] object-contain
+                  dark:hidden hover:scale-105 transition-transform absolute top-0 left-0">
+    </a>
+  </div>
   <!-- Sidebar izquierdo -->
 <div [hidden]="!menuOpen"
      class="fixed inset-y-0 left-0 z-50 w-64

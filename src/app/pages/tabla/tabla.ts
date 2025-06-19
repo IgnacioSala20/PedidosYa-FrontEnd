@@ -6,25 +6,8 @@ import { ModalAgregar } from '../modal-agregar/modal-agregar';
 import { ModalModificar } from '../modal-modificar/modal-modificar';
 import { Paginacion } from '../paginacion/paginacion';
 import { TripleBoton } from '../triple-boton/triple-boton';
-interface Provincia {
-  id: number;
-  name: string;
-  ciudades: string[];
-}
+import { Pais, Persona } from '../../interface/modales.dto';
 
-interface Pais {
-  id: number;
-  name: string;
-  provincias: Provincia[];
-}
-interface Persona {
-  nombre: string;
-  email: string;
-  fechaNacimiento: string;
-  ciudad: string | null;
-  provincia: Provincia | null;
-  pais: Pais | null;
-}
 
 @Component({
   selector: 'app-tabla',

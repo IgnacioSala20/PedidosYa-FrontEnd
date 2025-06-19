@@ -19,9 +19,13 @@ export class HomeComponent implements OnInit {
   }
 
   async initialization(): Promise<void> {
-    this.globalStatusService.setLoading(true);
-    const data = await this.apiService.getData();
-    this.items = data;
+    try {  
+      this.globalStatusService.setLoading(true);
+      const data = await this.apiService.getData();
+      this.items = data;
+    } catch (error) {
+      console.log(error) 
+    }
     this.globalStatusService.setLoading(false);
   }
 }
