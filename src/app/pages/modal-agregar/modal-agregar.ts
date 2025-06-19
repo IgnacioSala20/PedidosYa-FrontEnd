@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 // Primero define las interfaces de apoyo
@@ -31,7 +31,7 @@ interface Persona {
   templateUrl: './modal-agregar.html',
   styleUrl: './modal-agregar.css'
 })
-export class ModalAgregar {
+export class ModalAgregar implements OnChanges{
   @Input() mostrar: boolean = false;
   @Input() nuevaPersona: Persona = {
     nombre: '',
@@ -45,36 +45,8 @@ export class ModalAgregar {
 
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() guardarPersona = new EventEmitter<Persona>();
+  @Input() paises: Pais[] =[];
 
-  paises: Pais[] = [
-    {
-      id: 1,
-      name: 'Argentina',
-      provincias: [
-        {
-          id: 1,
-          name: 'Buenos Aires',
-          ciudades: ['La Plata', 'Mar del Plata', 'Bahía Blanca']
-        },
-        {
-          id: 2,
-          name: 'Mendoza',
-          ciudades: ['Mendoza Capital', 'San Rafael']
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Chile',
-      provincias: [
-        {
-          id: 3,
-          name: 'Santiago',
-          ciudades: ['Santiago Centro', 'Las Condes']
-        }
-      ]
-    }
-  ];
 
   provincias: Provincia[] = [];
   ciudades: string[] = [];
@@ -83,7 +55,13 @@ export class ModalAgregar {
     this.cerrarModal.emit();
   }
 
-  
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['nuevaPersona'] && this.nuevaPersona) {
+      // Reinicializa las provincias y ciudades si la persona cambia
+      this.provincias = this.nuevaPersona.pais?.provincias ?? [];
+      this.ciudades = this.nuevaPersona.provincia?.ciudades ?? [];
+    }
+  }
 agregarPersona() {
   if (this.formularioValido()) {
     // Normalizar fecha a Date si es string
@@ -104,7 +82,11 @@ private formularioValido(): boolean {
   const p = this.nuevaPersona;
   return !!(p.nombre && p.email && p.fechaNacimiento && p.ciudad && p.provincia && p.pais);
 }
-
+  onPaisSeleccionado(pais: Pais | null) {
+  this.nuevaPersona.pais = pais;
+  this.nuevaPersona.provincia = null;
+  this.nuevaPersona.ciudad = null;
+  } 
 
   onPaisChange() {
     if (this.nuevaPersona.pais) {

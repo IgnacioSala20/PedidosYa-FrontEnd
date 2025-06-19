@@ -301,10 +301,13 @@ items: Persona[] = [
 
     if (!confirmacion) return;
 
+    const fechaNacimiento = typeof persona.fechaNacimiento === 'string'
+      ? toLocalDate(persona.fechaNacimiento)
+      : persona.fechaNacimiento;
     // Agregar a la lista
     this.items.push({
       ...persona,
-      fechaNacimiento: new Date(persona.fechaNacimiento) // Asegurar que es Date
+      fechaNacimiento: fechaNacimiento // Asegurar que es Date
     });
     // Actualizar lista filtrada
     this.filteredItems = [...this.items];

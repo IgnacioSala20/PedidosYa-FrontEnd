@@ -26,7 +26,7 @@
         <!-- País -->
         <div>
         <label for="pais" class="block text-sm font-medium text-gray-700 dark:text-gray-300">País</label>
-        <select id="pais" name="pais" [(ngModel)]="nuevaPersona.pais" (change)="onPaisChange()" required class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
+        <select id="pais" name="pais" [(ngModel)]="nuevaPersona.pais" (ngModelChange)="onPaisChange()" (ngModelChange)="onPaisSeleccionado($event)" required class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <option *ngFor="let item of paises" [ngValue]="item">{{ item.name }}</option>
         </select>
         </div>
@@ -34,7 +34,7 @@
         <!-- Provincia -->
         <div *ngIf="provincias.length > 0">
         <label for="provincia" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Provincia</label>
-        <select id="provincia" name="provincia" [(ngModel)]="nuevaPersona.provincia" (change)="onProvinciaChange()" required class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
+        <select id="provincia" name="provincia" [(ngModel)]="nuevaPersona.provincia" (ngModelChange)="onProvinciaChange()" required class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <option *ngFor="let item of provincias" [ngValue]="item">{{ item.name }}</option>
         </select>
         </div>
