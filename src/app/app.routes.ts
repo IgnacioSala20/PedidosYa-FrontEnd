@@ -4,8 +4,14 @@ import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { Register } from './pages/register/register';
 import { Tabla } from './pages/tabla/tabla';
+import { CambioContrasenia } from './pages/cambio-contrasenia/cambio-contrasenia';
 
 export const routes: Routes = [
+    {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
   {
     path: '',
     component: TemplateComponent,
@@ -22,4 +28,5 @@ export const routes: Routes = [
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: Register },
+  { path: 'cambioContrasenia' , component: CambioContrasenia}
 ];

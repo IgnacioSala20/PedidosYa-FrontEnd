@@ -11,11 +11,6 @@ interface Provincia {
   name: string;
   ciudades: string[];
 }
-function toLocalDate(dateStr: string): Date {
-  const date = new Date(dateStr);
-  const timeOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() + timeOffset);
-}
 
 interface Pais {
   id: number;
@@ -25,7 +20,7 @@ interface Pais {
 interface Persona {
   nombre: string;
   email: string;
-  fechaNacimiento: Date | string;
+  fechaNacimiento: string;
   ciudad: string | null;
   provincia: Provincia | null;
   pais: Pais | null;
@@ -52,7 +47,7 @@ items: Persona[] = [
   {
     nombre: 'Martin',
     email: 'martin@gmail.com',
-    fechaNacimiento: new Date(2002, 11, 20),
+    fechaNacimiento: '2002-12-20',
     ciudad: 'Mendoza',
     provincia: {
       id: 1,
@@ -68,7 +63,7 @@ items: Persona[] = [
   {
     nombre: 'Lucia',
     email: 'lucia@example.com',
-    fechaNacimiento: new Date(1995, 5, 14),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Rosario',
     provincia: {
       id: 2,
@@ -84,7 +79,7 @@ items: Persona[] = [
   {
     nombre: 'Pedro',
     email: 'pedro123@gmail.com',
-    fechaNacimiento: new Date(1988, 8, 30),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Buenos Aires',
     provincia: {
       id: 3,
@@ -100,7 +95,7 @@ items: Persona[] = [
   {
     nombre: 'Ana',
     email: 'ana.rosales@mail.com',
-    fechaNacimiento: new Date(1992, 0, 5),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Córdoba',
     provincia: {
       id: 4,
@@ -116,7 +111,7 @@ items: Persona[] = [
   {
     nombre: 'Jorge',
     email: 'jorge.torres@mail.com',
-    fechaNacimiento: new Date(1979, 3, 22),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Salta',
     provincia: {
       id: 5,
@@ -132,7 +127,7 @@ items: Persona[] = [
   {
     nombre: 'Sofía',
     email: 'sofia_garcia@gmail.com',
-    fechaNacimiento: new Date(2000, 7, 18),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'La Plata',
     provincia: {
       id: 3,
@@ -148,7 +143,7 @@ items: Persona[] = [
   {
     nombre: 'Diego',
     email: 'diego_paz@hotmail.com',
-    fechaNacimiento: new Date(1985, 11, 2),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Bariloche',
     provincia: {
       id: 6,
@@ -164,7 +159,7 @@ items: Persona[] = [
   {
     nombre: 'Marta',
     email: 'marta.lopez@gmail.com',
-    fechaNacimiento: new Date(1998, 2, 11),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'San Juan',
     provincia: {
       id: 7,
@@ -180,7 +175,7 @@ items: Persona[] = [
   {
     nombre: 'Carlos',
     email: 'carlos.villa@yahoo.com',
-    fechaNacimiento: new Date(1990, 10, 9),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Santa Rosa',
     provincia: {
       id: 8,
@@ -196,7 +191,7 @@ items: Persona[] = [
   {
     nombre: 'Valentina',
     email: 'valentina.ramirez@mail.com',
-    fechaNacimiento: new Date(2003, 1, 25),
+    fechaNacimiento: '1995-05-14',
     ciudad: 'Mendoza Capital',
     provincia: {
       id: 1,
@@ -244,7 +239,7 @@ items: Persona[] = [
   nuevaPersona: Persona = {
     nombre: '',
     email: '',
-    fechaNacimiento: new Date(),
+    fechaNacimiento: '',
     ciudad: null,
     provincia: null,
     pais: null
@@ -268,18 +263,15 @@ items: Persona[] = [
       item.pais?.name.toLowerCase().includes(term)
     );
   }
-  formatDate(date: string | Date): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear();
+  formatDate(date: string): string {
+    const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
   }
   abrirModal() {
     this.nuevaPersona = {
       nombre: '',
       email: '',
-      fechaNacimiento: new Date,
+      fechaNacimiento: '',
       ciudad: null,
       provincia: null,
       pais: null
@@ -301,14 +293,8 @@ items: Persona[] = [
 
     if (!confirmacion) return;
 
-    const fechaNacimiento = typeof persona.fechaNacimiento === 'string'
-      ? toLocalDate(persona.fechaNacimiento)
-      : persona.fechaNacimiento;
     // Agregar a la lista
-    this.items.push({
-      ...persona,
-      fechaNacimiento: fechaNacimiento // Asegurar que es Date
-    });
+    this.items.push({...persona});
     // Actualizar lista filtrada
     this.filteredItems = [...this.items];
     
@@ -353,17 +339,9 @@ items: Persona[] = [
 
     if (!confirmacion) return;
 
-    // Convertir fechaNacimiento a tipo Date si es string
-    const fechaNacimiento = typeof personaModificada.fechaNacimiento === 'string'
-      ? toLocalDate(personaModificada.fechaNacimiento)
-      : personaModificada.fechaNacimiento;
-
     const index = this.items.indexOf(this.selectedItem);
     if (index !== -1) {
-      this.items[index] = {
-        ...personaModificada,
-        fechaNacimiento: fechaNacimiento
-      };
+      this.items[index] = {...personaModificada};
       this.items = [...this.items]; // ← Esto fuerza el refresh de Angular
       this.filteredItems = [...this.items];
       this.selectedItem = null;

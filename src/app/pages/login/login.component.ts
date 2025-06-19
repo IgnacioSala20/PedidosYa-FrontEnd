@@ -16,5 +16,8 @@ export class LoginComponent {
   toggleRegister(){
     this.router.navigate(['/register']); // Redirige al usuario a la página de registro
   }
+  goToCambio(){
+    this.router.navigate(['/cambioContrasenia'])
+  }
 
 }

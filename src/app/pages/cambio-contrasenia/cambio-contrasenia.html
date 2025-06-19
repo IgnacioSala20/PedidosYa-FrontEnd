@@ -1,0 +1,67 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white shadow-lg rounded-xl overflow-hidden">
+        <div class="bg-blue-600 text-white text-center p-6">
+            <h1 class="text-2xl font-bold">Cambiar Contraseña</h1>
+            <p class="mt-2">Actualiza tus datos para cambiar la contraseña</p>
+        </div>
+        <form [formGroup]="formulario" (ngSubmit)="enviar()" class="p-6 space-y-4">
+            @if (error) {
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Error:</strong>
+                    <span class="block sm:inline">{{ error }}</span>
+                </div>
+            }
+            <div class="flex flex-col">
+                <label class="block text-gray-700 mb-1">Contraseña actual</label>
+                <input 
+                formControlName="contraActual"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="password" required placeholder="••••••••" name="passwordActual" id="">
+                @if (formulario.get('contraActual')?.invalid && formulario.get('contraActual')?.touched){
+                    <p class="text-xs text-gray-500 mt-1">Contraseña actual es requerida y debe tener al menos 8 caracteres.</p>
+                }
+            </div>
+
+            <div class="flex flex-col">
+                <label class="block text-gray-700 mb-1">Nueva Contraseña</label>
+                <input 
+                formControlName="contraNueva"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="password" required placeholder="••••••••" name="nuevaContraseña" id="">
+                @if (formulario.get('contraNueva')?.invalid && formulario.get('contraNueva')?.touched){
+                    <p class="text-xs text-gray-500 mt-1">Minimo 8 caracteres</p>
+                }
+            </div>
+
+            <div class="flex flex-col">
+                <label class="block text-gray-700 mb-1">Confirma contraseña nueva</label>
+                <input 
+                formControlName="confirmacionContraNueva"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="password" required placeholder="••••••••" name="nuevaContraseña" id="">
+                @if (formulario.errors?.['noCoinciden'] && formulario.get('confirmacionContraNueva')?.touched) {
+                    <p class="text-xs text-gray-500 mt-1">Las contraseñas no coinciden.</p>
+                }
+            </div>
+            <button 
+                type="submit" 
+                [disabled]="formulario.invalid"
+                class="disabled:bg-blue-300 disabled:cursor-not-allowed  w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+            >
+                Cambiar Contraseña
+            </button>
+        </form>
+        <div class="bg-gray-50 px-6 py-4 text-center">
+        <p class="text-gray-600">
+            ¿Quieres Regresar?
+            <a 
+            (click)="goToLogin()" 
+            class="text-blue-600 hover:underline cursor-pointer"
+            >
+            Iniciar Sesion
+            </a>
+        </p>
+        </div>
+
+    </div>
+</div>

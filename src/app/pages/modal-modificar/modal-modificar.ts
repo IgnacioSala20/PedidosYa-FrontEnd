@@ -24,7 +24,7 @@ interface Pais {
 interface Persona {
   nombre: string;
   email: string;
-  fechaNacimiento: Date | string;
+  fechaNacimiento: string;
   ciudad: string | null;
   provincia: Provincia | null;
   pais: Pais | null;
@@ -65,10 +65,6 @@ export class ModalModificar implements OnChanges {
   inicializarPersonaLocal(persona: Persona) {
     this.personaLocal = JSON.parse(JSON.stringify(persona));
 
-    if (typeof this.personaLocal.fechaNacimiento === 'string') {
-      this.personaLocal.fechaNacimiento = this.personaLocal.fechaNacimiento.split('T')[0];
-    }
-
     const paisCompleto = this.paises.find(p => p.id === this.personaLocal.pais?.id);
     this.provincias = paisCompleto?.provincias || [];
 
@@ -80,8 +76,6 @@ export class ModalModificar implements OnChanges {
 
       // Cargar ciudades
       this.ciudades = this.personaLocal.provincia?.ciudades || [];
-      console.log('Ciudades disponibles:', this.ciudades);
-      console.log('Ciudad seleccionada:', this.personaLocal.ciudad);
 
       // Verificar que la ciudad exista en la lista
       if (!this.ciudades.includes(this.personaLocal.ciudad || '')) {

@@ -18,7 +18,7 @@ interface Pais {
 interface Persona {
   nombre: string;
   email: string;
-  fechaNacimiento: Date | string;
+  fechaNacimiento: string;
   ciudad: string | null;
   provincia: Provincia | null;
   pais: Pais | null;
@@ -36,12 +36,11 @@ export class ModalAgregar implements OnChanges{
   @Input() nuevaPersona: Persona = {
     nombre: '',
     email: '',
-    fechaNacimiento: new Date(),
+    fechaNacimiento: '',
     ciudad: null,
     provincia: null,
     pais: null
   };
-
 
   @Output() cerrarModal = new EventEmitter<void>();
   @Output() guardarPersona = new EventEmitter<Persona>();
@@ -64,16 +63,11 @@ export class ModalAgregar implements OnChanges{
   }
 agregarPersona() {
   if (this.formularioValido()) {
-    // Normalizar fecha a Date si es string
-    const fecha = typeof this.nuevaPersona.fechaNacimiento === 'string'
-      ? new Date(this.nuevaPersona.fechaNacimiento)
-      : this.nuevaPersona.fechaNacimiento;
-
     const persona: Persona = {
       ...this.nuevaPersona,
-      fechaNacimiento: fecha
     };
 
+    console.log('Fecha para guardar:', persona.fechaNacimiento); // yyyy-MM-dd
     this.guardarPersona.emit(persona);
     this.cerrar();
   }
