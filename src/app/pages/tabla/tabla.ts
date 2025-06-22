@@ -267,31 +267,22 @@ items: Persona[] = [
   }
 
   agregarPersona(persona: Persona) {
-    // Validación adicional por seguridad
     if (!persona.nombre || !persona.email || !persona.fechaNacimiento) {
       console.error('Datos incompletos');
       return;
     }
     const confirmacion = window.confirm('Confirmas Guardar Persona?');
-
     if (!confirmacion) return;
 
-    // Agregar a la lista
     this.items.push({...persona});
-    // Actualizar lista filtrada
     this.filteredItems = [...this.items];
-    
-    // Cerrar modal
     this.mostrarModal = false;
-    
-    // Opcional: Resetear búsqueda
     this.searchTerm = '';
     this.filterItems();
   }
 
   seleccionarFila(item: Persona) {
     this.selectedItem = this.selectedItem === item ? null : item;
-    console.log('Fila seleccionada:', this.selectedItem);
   }
 
   abrirModalModificar() {
@@ -306,26 +297,19 @@ items: Persona[] = [
       const confirmacion = window.confirm('¿Queres eliminar esta persona?');
       if (confirmacion) {
         this.items = this.items.filter(item => item !== this.selectedItem);
-      
-        // Actualizar lista filtrada
         this.filteredItems = [...this.items];
-
-        // Limpiar la selección
         this.selectedItem = null;
       }
     }
   }
   modificarPersona(personaModificada: Persona) {
     if (!personaModificada || !this.selectedItem) return;
-    
     const confirmacion = window.confirm('Confirmas los cambios?');
-
     if (!confirmacion) return;
-
     const index = this.items.indexOf(this.selectedItem);
     if (index !== -1) {
       this.items[index] = {...personaModificada};
-      this.items = [...this.items]; // ← Esto fuerza el refresh de Angular
+      this.items = [...this.items];
       this.filteredItems = [...this.items];
       this.selectedItem = null;
       this.mostrarModalModificar = false;
