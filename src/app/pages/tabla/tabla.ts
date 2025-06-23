@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,16 +7,22 @@ import { ModalModificar } from '../modal-modificar/modal-modificar';
 import { Paginacion } from '../paginacion/paginacion';
 import { TripleBoton } from '../triple-boton/triple-boton';
 import { Pais, Persona } from '../../interface/modales.dto';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 
 @Component({
   selector: 'app-tabla',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalAgregar, ModalModificar,Paginacion, TripleBoton],
+  imports: [CommonModule, FormsModule, ModalAgregar, ModalModificar,Paginacion, TripleBoton, HttpClientModule],
   templateUrl: './tabla.html',
   styleUrls: ['./tabla.css']
 })
-export class Tabla{
+export class Tabla implements OnInit {
+  ngOnInit() {
+    this.getPersonas();
+    this.getPaises();
+  }
+
   searchTerm = '';
   mostrarModal = false;
   selectedItem: Persona | null = null;
@@ -26,208 +32,28 @@ export class Tabla{
   paginaActual: number = 1;
   elementosPorPagina: number = 2;
   
-items: Persona[] = [
-  {
-    nombre: 'Martin',
-    email: 'martin@gmail.com',
-    fechaNacimiento: '2002-12-20',
-    ciudad: 'Mendoza',
-    provincia: {
-      id: 1,
-      name: 'Mendoza',
-      ciudades: ['Mendoza Capital', 'San Rafael']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
+  items: Persona[] = [];
+  paises: Pais[] = [];
+  async getPersonas() {
+    try {
+      const response = await this.http.get<Persona[]>('http://localhost:3000/person').toPromise();
+      this.items = response || [];
+      console.log('Personas obtenidas:', this.items);
+    } catch (error) {
+      console.error('Error personas:', error);
     }
-  },
-  {
-    nombre: 'Lucia',
-    email: 'lucia@example.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Rosario',
-    provincia: {
-      id: 2,
-      name: 'Santa Fe',
-      ciudades: ['Rosario', 'Santa Fe Capital']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
+  }  
+  async getPaises() {
+    try {
+      const response = await this.http.get<Pais[]>('http://localhost:3000/country').toPromise();
+      this.paises = response || [];
+    } catch (error) {
+      console.error('Error paises:', error);
     }
-  },
-  {
-    nombre: 'Pedro',
-    email: 'pedro123@gmail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Buenos Aires',
-    provincia: {
-      id: 3,
-      name: 'Buenos Aires',
-      ciudades: ['La Plata', 'Mar del Plata']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Ana',
-    email: 'ana.rosales@mail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Córdoba',
-    provincia: {
-      id: 4,
-      name: 'Córdoba',
-      ciudades: ['Córdoba Capital', 'Villa Carlos Paz']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Jorge',
-    email: 'jorge.torres@mail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Salta',
-    provincia: {
-      id: 5,
-      name: 'Salta',
-      ciudades: ['Salta Capital', 'Cafayate']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Sofía',
-    email: 'sofia_garcia@gmail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'La Plata',
-    provincia: {
-      id: 3,
-      name: 'Buenos Aires',
-      ciudades: ['La Plata', 'Mar del Plata']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Diego',
-    email: 'diego_paz@hotmail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Bariloche',
-    provincia: {
-      id: 6,
-      name: 'Río Negro',
-      ciudades: ['Bariloche', 'Viedma']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Marta',
-    email: 'marta.lopez@gmail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'San Juan',
-    provincia: {
-      id: 7,
-      name: 'San Juan',
-      ciudades: ['San Juan Capital', 'Rivadavia']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Carlos',
-    email: 'carlos.villa@yahoo.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Santa Rosa',
-    provincia: {
-      id: 8,
-      name: 'La Pampa',
-      ciudades: ['Santa Rosa', 'General Pico']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  },
-  {
-    nombre: 'Valentina',
-    email: 'valentina.ramirez@mail.com',
-    fechaNacimiento: '1995-05-14',
-    ciudad: 'Mendoza Capital',
-    provincia: {
-      id: 1,
-      name: 'Mendoza',
-      ciudades: ['Mendoza Capital', 'San Rafael']
-    },
-    pais: {
-      id: 1,
-      name: 'Argentina',
-      provincias: []
-    }
-  }
-];
-  paises: Pais[] = [
-    {
-      id: 1,
-      name: 'Argentina',
-      provincias: [
-        {
-          id: 1,
-          name: 'Mendoza',
-          ciudades: ['Mendoza Capital', 'San Rafael']
-        },
-        {
-          id: 2,
-          name: 'Buenos Aires',
-          ciudades: ['La Plata', 'Mar del Plata']
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Chile',
-      provincias: [
-        {
-          id: 3,
-          name: 'Santiago',
-          ciudades: ['Santiago Centro', 'Providencia']
-        }
-      ]
-    }
-  ];
+  } 
   filteredItems: Persona[] = [...this.items];
   
-  nuevaPersona: Persona = {
-    nombre: '',
-    email: '',
-    fechaNacimiento: '',
-    ciudad: null,
-    provincia: null,
-    pais: null
-  };
-  constructor(public themeService: ThemeService) {
+  constructor(public themeService: ThemeService, private http: HttpClient) {
     this.filteredItems = [...this.items];
   }
 
@@ -251,14 +77,6 @@ items: Persona[] = [
     return `${day}/${month}/${year}`;
   }
   abrirModal() {
-    this.nuevaPersona = {
-      nombre: '',
-      email: '',
-      fechaNacimiento: '',
-      ciudad: null,
-      provincia: null,
-      pais: null
-    };
     this.mostrarModal = true;
   }
 
