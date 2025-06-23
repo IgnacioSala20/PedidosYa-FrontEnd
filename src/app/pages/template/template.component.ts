@@ -24,10 +24,14 @@ export class TemplateComponent {
   }
 
   logout() {
-    // Aquí tu lógica para cerrar sesión
     console.log('Sesión cerrada');
     this.showProfileMenu = false;
-    this.route.navigate(['/login'])
+    localStorage.removeItem('access_token');
+    
+    // Forzar navegación y reload para evitar estados inconsistentes
+    this.route.navigate(['/login']).then(() => {
+      window.location.reload();
+    });
   }
   isLoading(): boolean {
     return this.globalStatusService.isLoading();

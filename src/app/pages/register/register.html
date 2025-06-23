@@ -18,7 +18,7 @@
           <input 
           formControlName="nombre"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          type="text" required placeholder="Ej: ignacio" name="email" id="">
+          type="text" required placeholder="Ej: ignacio" name="email" id="nombre">
           @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched){
             <p class="text-xs text-gray-500 mt-1">Nombre en formato incorrecto.</p>
           }
@@ -29,7 +29,7 @@
           <input 
           formControlName="email"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          type="text" required placeholder="Ej: ignacio@gmail.com" name="email" id="">
+          type="text" required placeholder="Ej: ignacio@gmail.com" name="email" id="email">
           @if (formulario.get('email')?.invalid && formulario.get('email')?.touched){
             <p class="text-xs text-gray-500 mt-1">Email en formato incorrecto.</p>
           }
@@ -40,7 +40,7 @@
           <input 
           formControlName="contraseña"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          type="password" required placeholder="••••••••" name="email" id="">
+          type="password" required placeholder="••••••••" name="email" id="contraseña">
           <p class="text-xs text-gray-500 mt-1">Minimo 8 caracteres</p>
           @if (formulario.get('contraseña')?.invalid && formulario.get('contraseña')?.touched){
             <p class="text-xs text-gray-500 mt-1">Contraseña en formato incorrecto.</p>

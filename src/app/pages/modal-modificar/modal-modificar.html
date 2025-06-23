@@ -8,14 +8,14 @@
         <div>
           <label for="nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre</label>
           <input
-            formControlName="nombre"
+            formControlName="name"
             type="text"
-            id="nombre"
-            name="nombre"
+            id="name"
+            name="name"
             required
             class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700"
           />
-        @if (formulario.get('nombre')?.invalid && formulario.get('nombre')?.touched){
+        @if (formulario.get('name')?.invalid && formulario.get('name')?.touched){
           <p class="text-xs text-gray-500 mt-1">Nombre invalido.</p>
         }
         </div>
@@ -99,9 +99,10 @@
               name="ciudad"
               required
               class="mt-1 w-full p-2 border rounded-md dark:bg-gray-800 dark:text-white dark:border-gray-700"
-            >
-              @for (ciudad of ciudades; track ciudad){
-                <option [value]="ciudad">{{ ciudad }}</option>
+              [compareWith]="compareCiudad"
+              >
+              @for (c of ciudades; track c.id){
+                <option [ngValue]="c">{{ c.name }}</option>
               }
             </select>
           </div>

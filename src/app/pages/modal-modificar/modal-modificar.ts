@@ -1,7 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Pais, Persona, Provincia } from '../../interface/modales.dto';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Ciudad, Pais, Persona, Provincia } from '../../interface/modales.dto';
+import { ApiService } from '../../services/api.service';
+
 @Component({
   selector: 'app-modal-modificar',
   standalone: true,
@@ -9,12 +11,16 @@ import { Pais, Persona, Provincia } from '../../interface/modales.dto';
   templateUrl: './modal-modificar.html',
   styleUrls: ['./modal-modificar.css']
 })
-export class ModalModificar{
+export class ModalModificar implements OnInit{
   formulario: FormGroup;
   error = '';
-  constructor(private fb: FormBuilder){
+  ciudades: Ciudad[] = [];
+  dataCiudades: Ciudad[] = [];
+  provincias: Provincia[] = [];
+  paises: Pais[] = [];
+  constructor(private fb: FormBuilder, private readonly apiService: ApiService){
     this.formulario=this.fb.group({
-      nombre: ['',[Validators.required, Validators.maxLength(15)]],
+      name: ['',[Validators.required, Validators.maxLength(15)]],
       email: ['', [Validators.required, Validators.email]],
       fechaNacimiento: ['',[Validators.required]],
       pais: [null, [Validators.required]],
@@ -22,9 +28,12 @@ export class ModalModificar{
       ciudad: [null, [Validators.required]]
     })
   }
+  async ngOnInit(): Promise<void>{
+    const data = await this.apiService.getCiudad();
+    this.dataCiudades = data;
+    this.paises = this.extraerPaisesUnicos(data);
+  }
   @Input() mostrar = false;
-  @Input() paises: Pais[] = [];
-
   private _persona: Persona | null = null;
 
   @Input() set persona(value: Persona | null) {
@@ -33,43 +42,35 @@ export class ModalModificar{
       this.initFormulario(value);
     }
   }
-
   @Output() guardarPersona = new EventEmitter<Persona>();
   @Output() cerrarModal = new EventEmitter<void>();
 
-  provincias: Provincia[] = [];
-  ciudades: string[] = [];
 
   private initFormulario(persona: Persona) {
-    // Buscar país completo
-    const pais = this.paises.find(p => p.id === persona.pais?.id) || null;
-    const provincias = pais?.provincias || [];
+    const ciudad = this.dataCiudades.find(c => c.id === persona.ciudades?.id) || null;
+    const provincia = ciudad?.provincias || null;
+    const pais = this.paises.find(p => p.id === persona.ciudades?.provincias?.paises?.id) || null;
 
-    // Buscar provincia completa
-    const provincia = provincias.find(prov => prov.id === persona.provincia?.id) || null;
-    const ciudades = provincia?.ciudades || [];
-
-    // Validar ciudad
-    const ciudad = ciudades.includes(persona.ciudad || '') ? persona.ciudad : ciudades[0] || null;
-
-    this.provincias = provincias;
-    this.ciudades = ciudades;
-
+    this.provincias = this.extraerProvinciasUnicas(
+      this.dataCiudades.filter(c => c.provincias.paises.id === pais?.id)
+    );
+    this.ciudades = this.dataCiudades.filter(c => c.provincias.id === provincia?.id);
     this.formulario.setValue({
-      nombre: persona.nombre,
+      name: persona.name,
       email: persona.email,
       fechaNacimiento: persona.fechaNacimiento,
-      pais: pais,
-      provincia: provincia,
-      ciudad: ciudad
+      pais,
+      provincia,
+      ciudad
     });
   }
 
   onPaisChange() {
     const pais: Pais = this.formulario.get('pais')?.value;
-    this.provincias = pais?.provincias || [];
+    this.provincias = this.extraerProvinciasUnicas(
+      this.dataCiudades.filter(c => c.provincias.paises.id === pais?.id)
+    );
     this.ciudades = [];
-
     this.formulario.patchValue({
       provincia: null,
       ciudad: null
@@ -78,8 +79,7 @@ export class ModalModificar{
 
   onProvinciaChange() {
     const provincia: Provincia = this.formulario.get('provincia')?.value;
-    this.ciudades = provincia?.ciudades || [];
-
+    this.ciudades = this.dataCiudades.filter(c => c.provincias.id === provincia?.id);
     this.formulario.patchValue({
       ciudad: null
     });
@@ -87,9 +87,8 @@ export class ModalModificar{
 
   cerrar() {
     if (this._persona) {
-      this.initFormulario(this._persona); // Restaurar datos originales
+      this.initFormulario(this._persona);//Restaura datos originales
     }
-
     this.cerrarModal.emit();
   }
   guardar() {
@@ -97,17 +96,14 @@ export class ModalModificar{
       this.error = "Completa todos los campos correctamente.";
       return;
     }
-
     const persona: Persona = this.formulario.value;
     this.guardarPersona.emit(persona);
     this.cerrar();
   }
 
   compareProvincia(p1: Provincia | null, p2: Provincia | null): boolean {
-    //Compara 2 provincias, una es la provincia que viene seleccionada
-    //es decir la que viene con la persona a modificar, y luego los otros son las
-    //provincias que estan dentro de las option, para que cuando sean iguales los id, 
-    // sabemos que esa opcion se marca como selected, es decir se pone selected
+    //Compara 2 provincias, una es la provincia que viene seleccionada es decir la que viene con la persona a modificar, y luego los otros son las
+    //provincias que estan dentro de las option, para que cuando sean iguales los id,  sabemos que esa opcion se marca como selected, es decir se pone selected
     if (p1 && p2) {
       return p1.id === p2.id;
     }
@@ -120,5 +116,30 @@ export class ModalModificar{
     }
     return p1 === p2;
   }
+  compareCiudad = (c1: Ciudad, c2: Ciudad): boolean => {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
 
+
+  extraerProvinciasUnicas(ciudades: Ciudad[]): Provincia[] {
+    const mapa = new Map<number, Provincia>();
+    for (const ciudad of ciudades) {
+      const prov = ciudad.provincias;
+      if (!mapa.has(prov.id)) {
+        mapa.set(prov.id, prov);
+      }
+    }
+    return Array.from(mapa.values());
+  }
+
+  extraerPaisesUnicos(ciudades: Ciudad[]): Pais[] {
+    const mapa = new Map<number, Pais>();
+    for (const ciudad of ciudades) {
+      const pais = ciudad.provincias.paises;
+      if (!mapa.has(pais.id)) {
+        mapa.set(pais.id, pais);
+      }
+    }
+    return Array.from(mapa.values());
+  }
 }

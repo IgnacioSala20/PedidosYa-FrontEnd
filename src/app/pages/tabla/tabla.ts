@@ -7,69 +7,54 @@ import { ModalModificar } from '../modal-modificar/modal-modificar';
 import { Paginacion } from '../paginacion/paginacion';
 import { TripleBoton } from '../triple-boton/triple-boton';
 import { Pais, Persona } from '../../interface/modales.dto';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-tabla',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalAgregar, ModalModificar,Paginacion, TripleBoton, HttpClientModule],
+  imports: [CommonModule, FormsModule, ModalAgregar, ModalModificar,Paginacion, TripleBoton],
   templateUrl: './tabla.html',
   styleUrls: ['./tabla.css']
 })
-export class Tabla implements OnInit {
-  ngOnInit() {
-    this.getPersonas();
-    this.getPaises();
-  }
+export class Tabla implements OnInit{
+  items: Persona[] = [];
+  meta: any = null;
 
+  constructor(public themeService: ThemeService, private readonly apiService: ApiService) {}
+  
+  
+  paises: Pais[] = [];
+  async ngOnInit(): Promise<void> {
+    await this.cargarPersonas();
+    const dataCiudades = await this.apiService.getCiudad();
+    this.paises = dataCiudades;
+  }
+  async cargarPersonas(): Promise<void> {
+    const response = await this.apiService.getPersonasPaginadas(this.paginaActual, this.elementosPorPagina);
+    this.items = response.items;
+    this.meta = response.meta; // info como totalItems, totalPages, etc.
+      console.log('Persona[0]:', this.items[0]); // 👈 revisá si trae .ciudades
+
+  }
   searchTerm = '';
   mostrarModal = false;
   selectedItem: Persona | null = null;
-  
   mostrarModalModificar = false;
-  
   paginaActual: number = 1;
-  elementosPorPagina: number = 2;
-  
-  items: Persona[] = [];
-  paises: Pais[] = [];
-  async getPersonas() {
-    try {
-      const response = await this.http.get<Persona[]>('http://localhost:3000/person').toPromise();
-      this.items = response || [];
-      console.log('Personas obtenidas:', this.items);
-    } catch (error) {
-      console.error('Error personas:', error);
-    }
-  }  
-  async getPaises() {
-    try {
-      const response = await this.http.get<Pais[]>('http://localhost:3000/country').toPromise();
-      this.paises = response || [];
-    } catch (error) {
-      console.error('Error paises:', error);
-    }
-  } 
-  filteredItems: Persona[] = [...this.items];
-  
-  constructor(public themeService: ThemeService, private http: HttpClient) {
-    this.filteredItems = [...this.items];
-  }
-
+  elementosPorPagina: number = 9;
+  filteredItems: Persona[] = [];
   filterItems() {
     if (!this.searchTerm) {
       this.filteredItems = [...this.items];
       return;
     }
-    
     const term = this.searchTerm.toLowerCase();
     this.filteredItems = this.items.filter(item =>
-      item.nombre.toLowerCase().includes(term) ||
+      item.name.toLowerCase().includes(term) ||
       item.email.toLowerCase().includes(term) ||
-      item.ciudad?.toLowerCase().includes(term) ||
-      item.provincia?.name.toLowerCase().includes(term) ||
-      item.pais?.name.toLowerCase().includes(term)
+      item.ciudades?.name.toLowerCase().includes(term) ||
+      item.ciudades?.provincias?.name.toLowerCase().includes(term) ||
+      item.ciudades?.provincias?.paises?.name.toLowerCase().includes(term)
     );
   }
   formatDate(date: string): string {
@@ -84,16 +69,16 @@ export class Tabla implements OnInit {
     this.mostrarModal = false;
   }
 
-  agregarPersona(persona: Persona) {
-    if (!persona.nombre || !persona.email || !persona.fechaNacimiento) {
+  async agregarPersona(persona: Persona) {
+    if (!persona.name || !persona.email || !persona.fechaNacimiento) {
       console.error('Datos incompletos');
       return;
     }
     const confirmacion = window.confirm('Confirmas Guardar Persona?');
     if (!confirmacion) return;
+    const nuevaPersona = this.apiService.crearPersona(persona); 
+    this.items.push(await nuevaPersona);
 
-    this.items.push({...persona});
-    this.filteredItems = [...this.items];
     this.mostrarModal = false;
     this.searchTerm = '';
     this.filterItems();
@@ -110,36 +95,44 @@ export class Tabla implements OnInit {
       alert('Selecciona una persona para modificar');
     }
   }
-  eliminarPersona(){
+  async eliminarPersona() {
     if(this.selectedItem){
       const confirmacion = window.confirm('¿Queres eliminar esta persona?');
       if (confirmacion) {
+        await this.apiService.eliminarPersona(this.selectedItem.id);
         this.items = this.items.filter(item => item !== this.selectedItem);
-        this.filteredItems = [...this.items];
         this.selectedItem = null;
       }
     }
   }
-  modificarPersona(personaModificada: Persona) {
+  async modificarPersona(personaModificada: Persona) {
     if (!personaModificada || !this.selectedItem) return;
-    const confirmacion = window.confirm('Confirmas los cambios?');
-    if (!confirmacion) return;
-    const index = this.items.indexOf(this.selectedItem);
-    if (index !== -1) {
-      this.items[index] = {...personaModificada};
-      this.items = [...this.items];
-      this.filteredItems = [...this.items];
-      this.selectedItem = null;
-      this.mostrarModalModificar = false;
-    }
+      const confirmacion = window.confirm('Confirmas los cambios?');
+      if (!confirmacion) return;
+      if (!personaModificada.name || !personaModificada.email || !personaModificada.fechaNacimiento) {
+        console.error('Datos incompletos');
+        return;
+      }
+      try {
+        const personaConId = { ...personaModificada, id: this.selectedItem.id };
+        const personaActualizada = await this.apiService.modificarPersona(personaConId);
+        const index = this.items.indexOf(this.selectedItem);
+        if (index !== -1) {
+          this.items[index] = {...personaActualizada};
+          this.items = [...this.items];
+          this.selectedItem = null;
+          this.mostrarModalModificar = false;
+        }
+      } catch (error) {
+        console.error('Error al modificar persona:', error);
+        alert('No se pudo modificar la persona. Intente nuevamente.');
+      }
   }
-  // getters y otros métodos igual que antes
-  get totalPaginas(): number {
-    return Math.ceil(this.filteredItems.length / this.elementosPorPagina);
+  onPaginaCambiada(nuevaPagina: number) {
+    this.paginaActual = nuevaPagina;
+    this.cargarPersonas();
   }
-
   get itemsPaginados(): Persona[] {
-    const inicio = (this.paginaActual - 1) * this.elementosPorPagina;
-    return this.filteredItems.slice(inicio, inicio + this.elementosPorPagina);
+    return this.items; // así aplicás búsqueda + paginación si querés más adelante
   }
 }
