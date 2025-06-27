@@ -25,7 +25,7 @@ export class ModalAgregar  implements OnInit{
       fechaNacimiento: ['',[Validators.required]],
       pais: [null, [Validators.required]],
       provincia: [null, [Validators.required]],
-      ciudad: [null, [Validators.required]]
+      ciudades: [null, [Validators.required]]
     })
   }
   async ngOnInit(): Promise<void>{
@@ -64,7 +64,7 @@ export class ModalAgregar  implements OnInit{
     this.ciudades = [];
     this.formulario.patchValue({
       provincia: null,
-      ciudad: null
+      ciudades: null
     });
   }
 
@@ -72,7 +72,7 @@ export class ModalAgregar  implements OnInit{
     const provincia: Provincia = this.formulario.get('provincia')?.value;
     this.ciudades = this.dataCiudades.filter(c => c.provincias.id === provincia?.id);
     this.formulario.patchValue({
-      ciudad: null
+      ciudades: null
     });
   }
   extraerProvinciasUnicas(ciudades: Ciudad[]): Provincia[] {

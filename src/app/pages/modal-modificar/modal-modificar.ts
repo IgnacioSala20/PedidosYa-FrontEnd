@@ -23,9 +23,9 @@ export class ModalModificar implements OnInit{
       name: ['',[Validators.required, Validators.maxLength(15)]],
       email: ['', [Validators.required, Validators.email]],
       fechaNacimiento: ['',[Validators.required]],
-      pais: [null, [Validators.required]],
-      provincia: [null, [Validators.required]],
-      ciudad: [null, [Validators.required]]
+      paises: [null, [Validators.required]],
+      provincias: [null, [Validators.required]],
+      ciudades: [null, [Validators.required]]
     })
   }
   async ngOnInit(): Promise<void>{
@@ -59,29 +59,29 @@ export class ModalModificar implements OnInit{
       name: persona.name,
       email: persona.email,
       fechaNacimiento: persona.fechaNacimiento,
-      pais,
-      provincia,
-      ciudad
+      paises: pais,           // un solo Pais
+      provincias: provincia,  // un solo Provincia
+      ciudades: ciudad       // un solo Ciudad
     });
   }
 
   onPaisChange() {
-    const pais: Pais = this.formulario.get('pais')?.value;
+    const pais: Pais = this.formulario.get('paises')?.value;
     this.provincias = this.extraerProvinciasUnicas(
       this.dataCiudades.filter(c => c.provincias.paises.id === pais?.id)
     );
     this.ciudades = [];
     this.formulario.patchValue({
-      provincia: null,
-      ciudad: null
+      provincias: null,
+      ciudades: null
     });
   }
 
   onProvinciaChange() {
-    const provincia: Provincia = this.formulario.get('provincia')?.value;
+    const provincia: Provincia = this.formulario.get('provincias')?.value;
     this.ciudades = this.dataCiudades.filter(c => c.provincias.id === provincia?.id);
     this.formulario.patchValue({
-      ciudad: null
+      ciudades: null
     });
   }
 

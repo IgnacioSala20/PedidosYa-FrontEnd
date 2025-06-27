@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { config } from '../config/env';
-import { Persona } from '../interface/modales.dto';
+import { Persona, PersonaCreateDTO } from '../interface/modales.dto';
 import axiosService from '../../api/apiClient';
 
 @Injectable({

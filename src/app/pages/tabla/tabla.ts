@@ -33,8 +33,6 @@ export class Tabla implements OnInit{
     const response = await this.apiService.getPersonasPaginadas(this.paginaActual, this.elementosPorPagina);
     this.items = response.items;
     this.meta = response.meta; // info como totalItems, totalPages, etc.
-      console.log('Persona[0]:', this.items[0]); // 👈 revisá si trae .ciudades
-
   }
   searchTerm = '';
   mostrarModal = false;
@@ -71,19 +69,19 @@ export class Tabla implements OnInit{
 
   async agregarPersona(persona: Persona) {
     if (!persona.name || !persona.email || !persona.fechaNacimiento) {
-      console.error('Datos incompletos');
       return;
     }
-    const confirmacion = window.confirm('Confirmas Guardar Persona?');
+    const confirmacion = window.confirm('¿Confirmás guardar la persona?');
     if (!confirmacion) return;
-    const nuevaPersona = this.apiService.crearPersona(persona); 
-    this.items.push(await nuevaPersona);
-
+    if (!persona.ciudades || !persona.ciudades.id) {
+      return;
+    }
+    const nuevaPersona = await this.apiService.crearPersona(persona);
+    this.items.push(nuevaPersona);
     this.mostrarModal = false;
     this.searchTerm = '';
     this.filterItems();
   }
-
   seleccionarFila(item: Persona) {
     this.selectedItem = this.selectedItem === item ? null : item;
   }

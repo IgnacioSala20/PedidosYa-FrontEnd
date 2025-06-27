@@ -26,3 +26,10 @@ export interface Pais {
     name: string;
     deletedAt: string | null;
 }
+
+export interface PersonaCreateDTO {
+  name: string;
+  email: string;
+  fechaNacimiento: string; // idealmente en formato 'YYYY-MM-DD'
+  ciudades: { id: number };   // objeto que contiene solo el id de la ciudad
+}
