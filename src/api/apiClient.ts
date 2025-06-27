@@ -6,65 +6,69 @@ const axiosService = axios.create({
 },
 });
 
-// Interceptor para agregar el token a cada request
+//Interceptor para agregar el token a cada request
 axiosService.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
-            //config.headers.Authorization = `Bearer ${token}`;
-            config.headers.Authorization = token;
+            config.headers.Authorization = `Bearer ${token}`;
+            //config.headers.Authorization = token;
             }return config;
         },
     (error) => {
         return Promise.reject(error);
     }
 );
-
 //Con este interceptor se maneja la expiración del token
 // Si el token expira, se hace un request al endpoint de refresh token y se actualiza el access token en localStorage
 // Si el refresh token también ha expirado, se redirige al usuario a la página de login
 axiosService.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        //Guarda la configuración de la request original que falló.
-        const originalRequest = error.config;
+  (response) => response,
+  async (error) => {
+    //Esto nos permite reenviar la petición original cuando obtengamos un nuevo token
+    const originalRequest = error.config;
 
-        //Verifica si el error es de tipo 401 (Unauthorized) y si la request original no ha sido reintentada aún.
-        if (
-        error.response?.status === 401 &&
-        !originalRequest._retry // evita bucles infinitos
-        ) {
-        originalRequest._retry = true;
+    //Aqui verificamos que sea 401 y que ademas se evita un loop infinito si ya se intento la request una vez.
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-        //Obtenemos el refresh token del localstorage de forma que despues lo podamos pasar como parametro al endpoint de refresh token
-        const refreshToken = localStorage.getItem('refreshToken');
-
-        try {
-            const response = await axios.post('/refresh-token', null, {
-            headers: {
-                'refresh-token': refreshToken!,
-            },
-            });
-
-            const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-            //Guardar nuevos tokens
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', newRefreshToken);
-
-            //Actualizar header y reintentar la request original
-            originalRequest.headers.Authorization = accessToken;
-            return axiosService(originalRequest);
-        } catch (err) {
-            //Si no se pudo refrescar el token: lo manda al login
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/login';
-            return Promise.reject(err);
-        }
-        }
+      //Agarramos el refresh token del localStorage
+      //Si no existe, redirigimos al usuario a la página de login
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        window.location.href = '/login';
         return Promise.reject(error);
+      }
+      try {
+        //Hacemos un request al endpoint de refresh token para obtener un nuevo access token
+        //Si el refresh token es válido, se actualiza el access token y el refresh token
+        //Si el refresh token ha expirado, se redirige al usuario a la página
+        const response = await axios.post('http://localhost:3001/users/refresh-token', null, {
+          headers: {
+            'refresh-token': refreshToken,
+          },
+        });
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        //Reintentamos la petición original con el nuevo token
+        //Esto es importante para que la petición que falló se reenvíe con el nuevo token
+        //y no se pierda la información de la petición original
+        return axiosService(originalRequest);
+      } catch (err) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        return Promise.reject(err);
+      }
+    } else {
+      console.warn('No es un error 401 o ya fue reintentado');
     }
+    return Promise.reject(error);
+  }
 );
 
 export default axiosService;

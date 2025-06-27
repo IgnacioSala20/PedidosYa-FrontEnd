@@ -54,6 +54,21 @@ export class ApiService {
       email: email,
     });
   }
-
+  async refreshToken() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No hay refresh token disponible');
+    }
+    const response = await axiosService.post('http://localhost:3001/users/refresh-token', null, {
+      headers: {
+        'refresh-token': refreshToken,
+      },
+    });
+    const accessToken = response.data.accessToken;
+    const newRefreshToken = response.data.refreshToken;
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', newRefreshToken);
+    return { accessToken, newRefreshToken };
+  }
 }
 
