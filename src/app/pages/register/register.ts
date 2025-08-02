@@ -15,8 +15,8 @@ export class Register {
   constructor(private router: Router, private fb: FormBuilder, private readonly apiService: ApiService) {
       this.formulario=this.fb.group({
       nombre: ['',[ Validators.required, Validators.maxLength(15)]],
-      email: ['',[Validators.required]],
-      contraseña: ['', [Validators.required, Validators.minLength(8)]]
+      email: ['',[Validators.required, Validators.email]],
+      contraseña: ['', [Validators.required, Validators.minLength(7)]]
     })
   }
 

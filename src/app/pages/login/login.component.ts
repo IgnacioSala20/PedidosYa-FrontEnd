@@ -14,8 +14,8 @@ export class LoginComponent implements OnInit{
   constructor(private router: Router,private fb: FormBuilder, private readonly apiService:ApiService
   ){
     this.formulario=this.fb.group({
-      email: ['',[Validators.required]],
-      contraseña: ['', [Validators.required, Validators.maxLength(8)]]
+      email: ['',[Validators.required, Validators.email]],
+      contraseña: ['', [Validators.required, Validators.minLength(7)]]
     })
   }
   ngOnInit() {
